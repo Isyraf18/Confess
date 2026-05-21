@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Someone Special</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ffe5ec 0%, #ffc2d1 100%);
+            padding: 20px;
+            overflow: hidden; /* Prevents scrollbars during the runaway phase */
+        }
+
+        .card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        h1 {
+            color: #ff4d6d;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: #4a4a4a;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            min-height: 80px; 
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        #nextBtn, #yesBtn {
+            background-color: #ff4d6d;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
+        }
+
+        #nextBtn:hover, #yesBtn:hover {
+            background-color: #ff758f;
+            transform: scale(1.05);
+        }
+
+        #noBtn {
+            background-color: #f0f0f0;
+            color: #666;
+            transform-origin: center;
+            z-index: 100; /* Keeps it above other elements while running away */
+        }
+
+        #noBtn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="mainCard">
+        <span class="emoji" id="cardEmoji">👉👈</span>
+        <h1 id="cardTitle">Uhmmm...</h1>
+        <p id="cardText">Can I ask you something?</p>
+        
+        <div class="btn-group" id="btnGroup">
+            <button id="nextBtn" onclick="handleNext()">Next</button>
+            <button id="yesBtn" class="hidden" onclick="handleYes()">Yes! 💖</button>
+            <button id="noBtn" class="hidden">No 😢</button>
+        </div>
+    </div>
+
+    <script>
+        let noClicks = 0;
+        let isRunningAway = false;
+        
+        // Telegram notification credentials
+        const botToken = "8699276009:AAFEK4vtByk93fkmHVhqIsr9ep9IW5Qqhmo"; 
+        const chatId = "626949362"; 
+        
+        // Custom message alerts for both outcomes
+        const textAlertYes = "🚨 GOOD NEWS ALERT! 🚨\nShe just clicked YES on your webpage! 🎉❤️";
+        const textAlertNo = "😔 Update:\nShe clicked No after the countdown. Keep your head up, at least you know! 🤍";
+
+        const noButton = document.getElementById('noBtn');
+        const yesButton = document.getElementById('yesBtn');
+        const nextButton = document.getElementById('nextBtn');
+        const cardTitle = document.getElementById('cardTitle');
+        const cardText = document.getElementById('cardText');
+        const cardEmoji = document.getElementById('cardEmoji');
+        const btnGroup = document.getElementById('btnGroup');
+
+        const prompts = [
+            { text: "Are you absolutely sure? 🥺", scale: 0.8 },
+            { text: "Think about it one more time... 💔", scale: 0.6 },
+            { text: "Surely you don't mean that? 😭", scale: 0.4 },
+            { text: "Last chance to change your mind! 🔥", scale: 0.2 }
+        ];
+
+        // 1. Move to Confession + Trigger the Runaway Window
+        function handleNext() {
+            nextButton.classList.add('hidden');
+            yesButton.classList.remove('hidden');
+            noButton.classList.remove('hidden');
+            
+            cardEmoji.innerText = "✨";
+            cardTitle.innerText = "I have a quick question...";
+            cardText.innerText = "I've really enjoyed spending time with you lately, and I've developed feelings for you. Would you want to go out for a Tealive sometime?";
+            
+            isRunningAway = true;
+
+            // Stop running away after exactly 5 seconds
+            setTimeout(() => {
+                isRunningAway = false;
+                
+                noButton.style.position = '';
+                noButton.style.left = '';
+                noButton.style.top = '';
+                noButton.style.transform = 'scale(1)';
+            }, 5000);
+        }
+
+        // 2. Runaway Evasion Logic
+        function handleNoMovement(e) {
+            if (!isRunningAway) return;
+
+            if (e && e.type === 'touchstart') e.preventDefault(); 
+
+            noButton.style.position = 'fixed';
+            const safeWidth = window.innerWidth - noButton.offsetWidth - 20;
+            const safeHeight = window.innerHeight - noButton.offsetHeight - 20;
+            
+            const randomX = Math.max(10, Math.floor(Math.random() * safeWidth));
+            const randomY = Math.max(10, Math.floor(Math.random() * safeHeight));
+            
+            noButton.style.left = `${randomX}px`;
+            noButton.style.top = `${randomY}px`;
+        }
+
+        noButton.addEventListener('mouseover', handleNoMovement);
+        noButton.addEventListener('touchstart', handleNoMovement);
+
+        // 3. Click Handler for No Button
+        noButton.addEventListener('click', () => {
+            if (isRunningAway) {
+                handleNoMovement();
+                return;
+            }
+
+            noClicks++;
+
+            if (noClicks < 5) {
+                const stage = prompts[noClicks - 1];
+                noButton.style.transform = `scale(${stage.scale})`;
+                cardText.innerText = stage.text;
+            } else {
+                handleReject();
+            }
+        });
+
+        // 4. Outcomes
+        function handleYes() {
+            cardEmoji.innerText = "🥳🎉";
+            cardTitle.innerText = "Yay! You made my day!";
+            cardText.innerHTML = "I'll text you soon so we can figure out a time that works for you. ✨";
+            btnGroup.style.display = "none";
+
+            // Send YES alert to Telegram
+            sendTelegramMessage(textAlertYes);
+        }
+
+        function handleReject() {
+            cardEmoji.innerText = "🤍";
+            cardTitle.style.color = "#666";
+            cardTitle.innerText = "Thank you for being honest!";
+            cardText.innerText = "I totally understand and respect your decision. No awkwardness at all—I'm just glad I got to tell you. See you around!";
+            btnGroup.style.display = "none";
+
+            // Send NO alert to Telegram
+            sendTelegramMessage(textAlertNo);
+        }
+
+        // Reusable function to dispatch background telegram alerts 
+        function sendTelegramMessage(messageText) {
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: messageText
+                })
+            }).catch(error => console.error("Telegram notification failed:", error));
+        }
+    </script>
+</body>
+</html>
